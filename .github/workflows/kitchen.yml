@@ -1,0 +1,26 @@
+name: kitchen
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  win_x86_64:
+    runs-on: windows-latest
+    env:
+      HAB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          clean: true
+
+      - name: Install Habitat CLI (Vulnerable Step)
+        shell: pwsh
+        run: |
+          # The bug: we just checked out untrusted code from the PR fork,
+          # and now we are executing a script from that untrusted code!
+          & "${{ github.workspace }}\.expeditor\scripts\ensure-minimum-viable-hab.ps1"
